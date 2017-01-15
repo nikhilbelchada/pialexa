@@ -5,4 +5,5 @@
 * start server
   
   . setup.sh
+  
   python manage.py runserver
