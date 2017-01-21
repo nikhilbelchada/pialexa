@@ -127,3 +127,4 @@ CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 AMAZON_OAUTH_URL = "https://www.amazon.com/ap/oa"
 AMAZON_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+AMAZON_ALEXA_VOICE_URL = "https://access-alexa-na.amazon.com/v1/avs/speechrecognizer/recognize"
