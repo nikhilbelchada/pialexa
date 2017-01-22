@@ -27,6 +27,7 @@ class SenseHatHelper(object):
         # check sense hat is attached
         try:
             self.sense_hat = SenseHat()
+            self.sense_hat.stick.direction_middle = handle_key_press_event
         except Exception as e:
             raise IOError('Seems sense hat is not attached!')
 
@@ -74,13 +75,13 @@ class SenseHatHelper(object):
         if l:
             self.audio += data
 
-    def handle_key_press_event(self, action):
+    def handle_key_press_event(self, event):
         """Routes JoyStick key event to appropriate action"""
-        if action == self.ACTION_RELEASED:
+        if event.action == self.ACTION_RELEASED:
             self.handle_button_released()
-        elif action == self.ACTION_PRESSED:
+        elif event.action == self.ACTION_PRESSED:
             self.handle_button_press()
-        elif action == self.ACTION_HELD:
+        elif event.action == self.ACTION_HELD:
             self.handle_button_hold()
 
     def start_event_loop(self):
