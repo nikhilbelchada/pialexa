@@ -1,6 +1,5 @@
 import os
 import wave
-import numpy
 import alsaaudio
 from evdev import (
     list_devices,
@@ -8,6 +7,7 @@ from evdev import (
     ecodes,
 )
 from sense_hat import SenseHat
+from alexa_service import AlexaService
 
 
 path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
@@ -24,11 +24,14 @@ class SenseHatHelper(object):
 
     def __init__(self):
         self.audio = ''
+
         # check sense hat is attached
         try:
             self.sense_hat = SenseHat()
-            self.sense_hat.stick.direction_middle = handle_key_press_event
+            self.sense_hat.stick.direction_middle = self.handle_key_press_event
+            self.status = ''
         except Exception as e:
+            print '====', e
             raise IOError('Seems sense hat is not attached!')
 
         # Check Audio Device
@@ -42,6 +45,7 @@ class SenseHatHelper(object):
     def handle_button_released(self):
         """Voice data is dumped on file and then passed to alexa service for
         processing"""
+        
         wave_object = wave.open(path + self.FILE_NAME, 'w')
         wave_object.setnchannels(1)
         wave_object.setframerate(16000)
@@ -49,22 +53,26 @@ class SenseHatHelper(object):
         wave_object.writeframes(self.audio)
         wave_object.close()
 
-        # send data to alexa service
+        # pass voice data to alexa service
+        self.sense_hat.show_letter("P")
+        AlexaService().post_voice_data()
 
         # reset data
-        self.alsa_input = None
         self.audio = ''
+        self.sense_hat.show_letter("?")
 
     def handle_button_hold(self):
         """Voice data is recorded"""
+        print "Your voice is being recorded, contiue to hold the button"
+
         l, data = self.alsa_input.read()
         if l:
             self.audio += data
-            audio = numpy.formatstring(data, type='int16')
-            loudness = int(numpy.abs(a).mean())
 
     def handle_button_press(self):
         """Initiate Audio Recording"""
+        print "Voice has been recorded and is being processed"
+
         self.audio = ''
         self.alsa_input.setchannels(1)
         self.alsa_input.setrate(16000)
@@ -77,17 +85,13 @@ class SenseHatHelper(object):
 
     def handle_key_press_event(self, event):
         """Routes JoyStick key event to appropriate action"""
+        print "You hit SenseHAT middle button"
+
         if event.action == self.ACTION_RELEASED:
             self.handle_button_released()
         elif event.action == self.ACTION_PRESSED:
+            self.sense_hat.clear()
+            self.sense_hat.show_letter("R")
             self.handle_button_press()
         elif event.action == self.ACTION_HELD:
             self.handle_button_hold()
-
-    def start_event_loop(self):
-        """Start event loop and listen to sense hat key events, to perform
-        key based action
-        """
-        for event in self.sense_hat.stick.get_events():
-            if event.direction == self.DIRECTION_MIDDLE:
-                self.handle_press_event(event.action)

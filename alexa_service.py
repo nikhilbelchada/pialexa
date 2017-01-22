@@ -1,4 +1,7 @@
+import re
 import os
+import json
+import requests
 from pialexa.utils import Credential
 from pialexa import settings
 
@@ -7,7 +10,7 @@ path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
 
 
 class AlexaService(object):
-    FILE_NAME = 'recording.mp3'
+    FILE_NAME = 'response.mp3'
 
     def __init__(self):
          try:
@@ -17,7 +20,7 @@ class AlexaService(object):
          except KeyError:
              raise ValueError('Run web server to get refresh token')
 
-        self.get_token()
+         self.get_token()
 
     def get_token(self):
         if self.token:
@@ -25,7 +28,7 @@ class AlexaService(object):
 
         payload = {
             "client_id": settings.CLIENT_ID,
-            "client_secret": Client_Secret,
+            "client_secret": settings.CLIENT_SECRET,
             "refresh_token": self.refresh_token,
             "grant_type": "refresh_token"
         }
@@ -36,7 +39,9 @@ class AlexaService(object):
         Credential().dump({'token': self.token})
 
     def post_voice_data(self):
-        headers = {'Authorization' : 'Bearer %s' % gettoken()}
+        from sensehat_helper import SenseHatHelper
+
+        headers = {'Authorization' : 'Bearer %s' % self.token}
         d = {
             "messageHeader": {
                 "deviceContext": [
@@ -58,14 +63,15 @@ class AlexaService(object):
             }
         }
 
-        with open(path + 'recording.wav') as inf:
+        with open(path + SenseHatHelper.FILE_NAME) as inf:
             files = [
                 ('file', ('request', json.dumps(d),
                           'application/json; charset=UTF-8')),
                 ('file', ('audio', inf, 'audio/S16; rate=16000; channels=1'))
             ]
 
-            response = requests.post(url, headers=headers, files=files)
+            response = requests.post(settings.AMAZON_ALEXA_VOICE_URL,
+                                     headers=headers, files=files)
             if response.status_code == 200:
                 for v in response.headers['content-type'].split(";"):
                     if re.match('.*boundary.*', v):
@@ -77,7 +83,7 @@ class AlexaService(object):
                     if (len(content) >= 1024):
                         audio = content.split('\r\n\r\n')[1].rstrip('--')
 
-                with open(path + "response.mp3", 'wb') as file_object:
+                with open(path + self.FILE_NAME, 'wb') as file_object:
                     file_object.write(audio)
                     os.system('mpg123 -q {0}{1}'.format(path, self.FILE_NAME))
 
