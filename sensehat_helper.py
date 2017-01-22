@@ -6,6 +6,7 @@ from evdev import (
     InputDevice,
     ecodes,
 )
+from sense_hat import SenseHat
 
 
 path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
@@ -22,13 +23,10 @@ class SenseHatHelper(object):
     def __init__(self):
         self.audio = ''
         # check sense hat is attached
-        for device in list_devices():
-            if device.name == self.DEVICE_NAME:
-                self.device = device
-
-        # If not found, raise error
-        if not self.device:
-            raise IOError('Device Not Found: Sense Hat')
+        try:
+            self.sense_hat = SenseHat()
+        except Exception as e:
+            raise IOError('Seems sense hat is not attached!')
 
         # Check Audio Device
         try:
