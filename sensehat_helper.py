@@ -17,9 +17,10 @@ class SenseHatHelper(object):
     SOUND_CARD = "plughw:1"  # arecord -L
     FILE_NAME = 'voice.wav'
     DEVICE_NAME = "Raspberry Pi Sense HAT Joystick"
-    KEY_RELEASED = 0
-    KEY_PRESSED = 1
-    KEY_HELD = 2
+    DIRECTION_MIDDLE = 'middle'
+    ACTION_PRESSED = 'pressed'
+    ACTION_RELEASED = 'released'
+    ACTION_HELD = 'held'
 
     def __init__(self):
         self.audio = ''
@@ -73,21 +74,19 @@ class SenseHatHelper(object):
         if l:
             self.audio += data
 
-    def handle_key_press_event(self, key):
+    def handle_key_press_event(self, action):
         """Routes JoyStick key event to appropriate action"""
-        if key == self.KEY_RELEASED:
+        if action == self.ACTION_RELEASED:
             self.handle_button_released()
-        elif key == self.KEY_PRESSED:
+        elif action == self.ACTION_PRESSED:
             self.handle_button_press()
-        elif key == self.KEY_HELD:
+        elif action == self.ACTION_HELD:
             self.handle_button_hold()
-        else:
-            print 'Press Joystick to record'
 
     def start_event_loop(self):
         """Start event loop and listen to sense hat key events, to perform
         key based action
         """
-        for event in self.device.read_loop():
-            if event.type == ecodes.EV_KEY and event.code == ecodes.KEY_ENTER:
-                self.handle_key_press_event(event.value)
+        for event in self.sense_hat.stick.get_events():
+            if event.direction == self.DIRECTION_MIDDLE:
+                self.handle_press_event(event.action)
