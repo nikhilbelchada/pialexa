@@ -1,3 +1,4 @@
+import os
 import wave
 import numpy
 import alsaaudio
