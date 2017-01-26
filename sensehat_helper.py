@@ -1,5 +1,6 @@
 import os
 import wave
+import logging
 import alsaaudio
 from evdev import (
     list_devices,
@@ -11,6 +12,7 @@ from alexa_service import AlexaService
 
 
 path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
+logger = logging.getLogger()
 
 
 class SenseHatHelper(object):
@@ -31,7 +33,10 @@ class SenseHatHelper(object):
             self.sense_hat = SenseHat()
             self.sense_hat.stick.direction_middle = self.handle_key_press_event
             self.status = ''
+
+            logger.info('Sense Hat is ready!')
         except Exception as e:
+            raise logger.exception('SenseHat device not found')
             raise IOError('Seems sense hat is not attached!')
 
         # Check Audio Device
@@ -49,12 +54,16 @@ class SenseHatHelper(object):
             self.alsa_input.setrate(16000)
             self.alsa_input.setformat(alsaaudio.PCM_FORMAT_S16_LE)
             self.alsa_input.setperiodsize(1024)
+
+            logger.info('Microphone is ready!')
         except alsaaudio.ALSAAudioError:
+            logger.exception('Microphone not found')
             raise IOError('Microphone not found')
 
     def handle_button_released(self):
         """Voice data is dumped on file and then passed to alexa service for
         processing"""
+        logger.info('Submitting Voice data to Alexa Service for processing')
         
         wave_object = wave.open(path + self.FILE_NAME, 'w')
         wave_object.setnchannels(1)

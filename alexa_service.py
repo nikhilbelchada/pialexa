@@ -4,12 +4,14 @@ Module to take care of Alexa Request and Response
 import re
 import os
 import json
+import logging
 import requests
 from pialexa.utils import Credential
 from pialexa import settings
 
 
 path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
+logger = logging.getLogger()
 
 
 class AlexaService(object):
@@ -26,6 +28,7 @@ class AlexaService(object):
              self.refresh_token = data['refresh_token']
              self.token = data.get('token', None)
          except KeyError:
+             logger.exception('Run web server to get refresh token')
              raise ValueError('Run web server to get refresh token')
 
          self.get_token()
@@ -90,6 +93,8 @@ class AlexaService(object):
                                      headers=headers, files=files)
 
             if response.status_code == 200:
+                logger.info('Successfull Response from Alexa Service')
+
                 for v in response.headers['content-type'].split(";"):
                     if re.match('.*boundary.*', v):
                         boundary =  v.split("=")[1]
@@ -107,12 +112,12 @@ class AlexaService(object):
                 return True
 
             if response.status_code == 403:
+                logger.warning('Token exipred, Refreshing Token')
                 # Refresh and set the token
-                print "Token expired, Refreshing..."
                 self.token = None
                 self.get_token()
 
                 return False
             if response.status_code == 203:
-                print "Voice data not available"
+                logger.warning('Provided Voice data is either empty or blank')
                 return False

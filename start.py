@@ -1,12 +1,21 @@
 from sensehat_helper import SenseHatHelper
 
+
 if __name__ == "__main__":
+    import logging
+    from logging.config import fileConfig
+
+    fileConfig('logger_config.ini')
+    logger = logging.getLogger()
+    logger.info('Starting PiAlexa Service')
+
     sense_object = SenseHatHelper()
-    print "Welcome to PiAlexa AI!!! Ask any question by pressing SenseHAT middle button!!"
     sense_object.sense_hat.show_letter("?")
+    logger.info('Welcome to Pi Alexa')
+
     try:
         while True:
             pass
     except KeyboardInterrupt:
         sense_object.sense_hat.clear()
-        print "Hope you enjoyed!!!!"    
+        logger.info('Thankyou for trying PiAlexa, Hope you enjoyed it!!')
