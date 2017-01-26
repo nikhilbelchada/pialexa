@@ -24,6 +24,7 @@ class SenseHatHelper(object):
 
     def __init__(self):
         self.audio = ''
+        self.alsa_input = None
 
         # check sense hat is attached
         try:
@@ -31,14 +32,23 @@ class SenseHatHelper(object):
             self.sense_hat.stick.direction_middle = self.handle_key_press_event
             self.status = ''
         except Exception as e:
-            print '====', e
             raise IOError('Seems sense hat is not attached!')
 
         # Check Audio Device
+        self.set_alsa_input()
+
+    def set_alsa_input(self):
+        """Helper function to connect to Micorphone"""
         try:
-            self.alsa_input = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,
-                                            alsaaudio.PCM_NORMAL,
-                                            self.SOUND_CARD)
+            if not self.alsa_input:
+                self.alsa_input = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,
+                                                alsaaudio.PCM_NORMAL,
+                                                self.SOUND_CARD)
+
+            self.alsa_input.setchannels(1)
+            self.alsa_input.setrate(16000)
+            self.alsa_input.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+            self.alsa_input.setperiodsize(1024)
         except alsaaudio.ALSAAudioError:
             raise IOError('Microphone not found')
 
@@ -55,29 +65,28 @@ class SenseHatHelper(object):
 
         # pass voice data to alexa service
         self.sense_hat.show_letter("P")
-        AlexaService().post_voice_data()
+        success = AlexaService().post_voice_data()
 
         # reset data
+        self.alsa_input = None
         self.audio = ''
-        self.sense_hat.show_letter("?")
+
+        if success:
+            self.sense_hat.show_letter("?")
+        else:
+            self.sense_hat.show_letter("E")
 
     def handle_button_hold(self):
         """Voice data is recorded"""
-        print "Your voice is being recorded, contiue to hold the button"
-
         l, data = self.alsa_input.read()
         if l:
             self.audio += data
 
     def handle_button_press(self):
         """Initiate Audio Recording"""
-        print "Voice has been recorded and is being processed"
 
         self.audio = ''
-        self.alsa_input.setchannels(1)
-        self.alsa_input.setrate(16000)
-        self.alsa_input.setformat(alsaaudio.PCM_FORMAT_S16_LE)
-        self.alsa_input.setperiodsize(1024)
+        self.set_alsa_input()
 
         l, data = self.alsa_input.read()
         if l:
@@ -85,7 +94,6 @@ class SenseHatHelper(object):
 
     def handle_key_press_event(self, event):
         """Routes JoyStick key event to appropriate action"""
-        print "You hit SenseHAT middle button"
 
         if event.action == self.ACTION_RELEASED:
             self.handle_button_released()

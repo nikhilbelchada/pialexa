@@ -8,4 +8,5 @@ if __name__ == "__main__":
         while True:
             pass
     except KeyboardInterrupt:
+        sense_object.sense_hat.clear()
         print "Hope you enjoyed!!!!"    

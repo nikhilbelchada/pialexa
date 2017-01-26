@@ -1,3 +1,6 @@
+"""
+Module to take care of Alexa Request and Response
+"""
 import re
 import os
 import json
@@ -10,6 +13,11 @@ path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
 
 
 class AlexaService(object):
+    """Helper class to post voice data to Alexa Service and
+    play the alexa response
+
+    Also, when necessary it auto refreshes Alexa Token
+    """
     FILE_NAME = 'response.mp3'
 
     def __init__(self):
@@ -23,6 +31,8 @@ class AlexaService(object):
          self.get_token()
 
     def get_token(self):
+        """Get already persisted token, else fetches the token from
+        amazon and store it for later request"""
         if self.token:
             return self.token
 
@@ -39,6 +49,12 @@ class AlexaService(object):
         Credential().dump({'token': self.token})
 
     def post_voice_data(self):
+        """Helper function to post recorded voice data to alexa service
+        and play the audio response from alexa
+
+        Returns:
+            bool: True is 200 response from alexa service else False
+        """
         from sensehat_helper import SenseHatHelper
 
         headers = {'Authorization' : 'Bearer %s' % self.token}
@@ -72,6 +88,7 @@ class AlexaService(object):
 
             response = requests.post(settings.AMAZON_ALEXA_VOICE_URL,
                                      headers=headers, files=files)
+
             if response.status_code == 200:
                 for v in response.headers['content-type'].split(";"):
                     if re.match('.*boundary.*', v):
@@ -87,3 +104,15 @@ class AlexaService(object):
                     file_object.write(audio)
                     os.system('mpg123 -q {0}{1}'.format(path, self.FILE_NAME))
 
+                return True
+
+            if response.status_code == 403:
+                # Refresh and set the token
+                print "Token expired, Refreshing..."
+                self.token = None
+                self.get_token()
+
+                return False
+            if response.status_code == 203:
+                print "Voice data not available"
+                return False
