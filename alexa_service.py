@@ -8,6 +8,7 @@ import logging
 import requests
 from pialexa.utils import Credential
 from pialexa import settings
+from utils import FileHelper
 
 
 path = os.path.realpath(__file__).rstrip(os.path.basename(__file__))
@@ -58,8 +59,6 @@ class AlexaService(object):
         Returns:
             bool: True is 200 response from alexa service else False
         """
-        from sensehat_helper import SenseHatHelper
-
         headers = {'Authorization' : 'Bearer %s' % self.token}
         d = {
             "messageHeader": {
@@ -82,7 +81,7 @@ class AlexaService(object):
             }
         }
 
-        with open(path + SenseHatHelper.FILE_NAME) as inf:
+        with open(path + FileHelper.FILE_NAME) as inf:
             files = [
                 ('file', ('request', json.dumps(d),
                           'application/json; charset=UTF-8')),
@@ -118,6 +117,6 @@ class AlexaService(object):
                 self.get_token()
 
                 return False
-            if response.status_code == 203:
+            if response.status_code == 204:
                 logger.warning('Provided Voice data is either empty or blank')
                 return False
