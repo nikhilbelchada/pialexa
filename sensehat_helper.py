@@ -2,11 +2,6 @@ import os
 import wave
 import logging
 import alsaaudio
-from evdev import (
-    list_devices,
-    InputDevice,
-    ecodes,
-)
 from sense_hat import SenseHat
 from alexa_service import AlexaService
 
