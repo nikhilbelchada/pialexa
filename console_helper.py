@@ -21,7 +21,6 @@ class ConsoleHelper(object):
         total = 0
         while total < AlsaHelper.RECORDING_LIMIT:
             total += 1
-            print total
             l, data = self.alsa_helper.alsa_input.read()
             if l:
                 self.audio += data

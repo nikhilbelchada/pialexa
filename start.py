@@ -1,5 +1,6 @@
 import sys
 from console_helper import ConsoleHelper
+from pialexa import settings
 
 
 if __name__ == "__main__":
@@ -8,6 +9,10 @@ if __name__ == "__main__":
 
     fileConfig('logger_config.ini')
     logger = logging.getLogger()
+    if not (settings.CLIENT_ID and settings.CLIENT_SECRET):
+        logger.warning('Please run "source setup.sh" first')
+        sys.exit()
+
     logger.info('Starting PiAlexa Service')
 
     SENSE_HAT = 0
@@ -20,8 +25,10 @@ if __name__ == "__main__":
     if option == CONSOLE:
         logger.info('Welcome to Console Alexa')
         while True:
-            console_input = raw_input('Press any key to ask question (q to quit)')
+            console_input = raw_input(
+                'Press c  to ask question (any other key to quit)')
             console_helper = ConsoleHelper()
+
             if console_input == 'q':
                 logger.info('Thankyou for trying Console Alexa, Hope you enjoyed it!!')
                 sys.exit()

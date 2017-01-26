@@ -28,7 +28,7 @@ class AlsaHelper(object):
                                                 alsaaudio.PCM_NORMAL,
                                                 self.SOUND_CARD)
 
-            self.alsa_input.setchannels(self.PERIOD_SIZE)
+            self.alsa_input.setchannels(self.CHANNELS)
             self.alsa_input.setrate(self.RATE)
             self.alsa_input.setformat(alsaaudio.PCM_FORMAT_S16_LE)
             self.alsa_input.setperiodsize(self.PERIOD_SIZE)
