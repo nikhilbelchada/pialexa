@@ -60,7 +60,7 @@ class SenseHatHelper(object):
 
     def handle_button_hold(self):
         """Voice data is recorded"""
-        l, data = self.alsa_input.read()
+        l, data = self.alsa_helper.alsa_input.read()
         if l:
             self.audio += data
 
