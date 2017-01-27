@@ -14,6 +14,7 @@
   . setup.sh
   
   python manage.py runserver
+  
   GOTO URL: http://localhost:8000/auth, login with amazon, this will set token for you.
   Note: Make sure you whitelist localhost:8000 in alexa developer console web settings tab.
  
