@@ -26,15 +26,16 @@ if __name__ == "__main__":
         logger.info('Welcome to Console Alexa')
         while True:
             console_input = raw_input(
-                'Press c  to ask question (any other key to quit)')
+                'Enter c to ask question (any other key to quit)')
             console_helper = ConsoleHelper()
 
-            if console_input == 'q':
-                logger.info('Thankyou for trying Console Alexa, Hope you enjoyed it!!')
-                sys.exit()
-            else:
+            if console_input == 'c':
                 console_helper.record()
                 console_helper.process()
+            else:
+                logger.info(
+                    'Thankyou for trying Console Alexa, Hope you enjoyed it!!')
+                sys.exit()
     else:
         from sensehat_helper import SenseHatHelper
         sense_object = SenseHatHelper()
